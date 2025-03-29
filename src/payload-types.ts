@@ -6,23 +6,103 @@
  * and re-run `payload generate:types` to regenerate this file.
  */
 
+/**
+ * Supported timezones in IANA format.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "supportedTimezones".
+ */
+export type SupportedTimezones =
+  | 'Pacific/Midway'
+  | 'Pacific/Niue'
+  | 'Pacific/Honolulu'
+  | 'Pacific/Rarotonga'
+  | 'America/Anchorage'
+  | 'Pacific/Gambier'
+  | 'America/Los_Angeles'
+  | 'America/Tijuana'
+  | 'America/Denver'
+  | 'America/Phoenix'
+  | 'America/Chicago'
+  | 'America/Guatemala'
+  | 'America/New_York'
+  | 'America/Bogota'
+  | 'America/Caracas'
+  | 'America/Santiago'
+  | 'America/Buenos_Aires'
+  | 'America/Sao_Paulo'
+  | 'Atlantic/South_Georgia'
+  | 'Atlantic/Azores'
+  | 'Atlantic/Cape_Verde'
+  | 'Europe/London'
+  | 'Europe/Berlin'
+  | 'Africa/Lagos'
+  | 'Europe/Athens'
+  | 'Africa/Cairo'
+  | 'Europe/Moscow'
+  | 'Asia/Riyadh'
+  | 'Asia/Dubai'
+  | 'Asia/Baku'
+  | 'Asia/Karachi'
+  | 'Asia/Tashkent'
+  | 'Asia/Calcutta'
+  | 'Asia/Dhaka'
+  | 'Asia/Almaty'
+  | 'Asia/Jakarta'
+  | 'Asia/Bangkok'
+  | 'Asia/Shanghai'
+  | 'Asia/Singapore'
+  | 'Asia/Tokyo'
+  | 'Asia/Seoul'
+  | 'Australia/Brisbane'
+  | 'Australia/Sydney'
+  | 'Pacific/Guam'
+  | 'Pacific/Noumea'
+  | 'Pacific/Auckland'
+  | 'Pacific/Fiji';
+
 export interface Config {
   auth: {
     users: UserAuthOperations;
   };
+  blocks: {};
   collections: {
     users: User;
     media: Media;
+    products: Product;
+    categories: Category;
+    orders: Order;
+    carts: Cart;
+    reviews: Review;
+    'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
+  };
+  collectionsJoins: {};
+  collectionsSelect: {
+    users: UsersSelect<false> | UsersSelect<true>;
+    media: MediaSelect<false> | MediaSelect<true>;
+    products: ProductsSelect<false> | ProductsSelect<true>;
+    categories: CategoriesSelect<false> | CategoriesSelect<true>;
+    orders: OrdersSelect<false> | OrdersSelect<true>;
+    carts: CartsSelect<false> | CartsSelect<true>;
+    reviews: ReviewsSelect<false> | ReviewsSelect<true>;
+    'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
+    'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
+    'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
   };
   db: {
     defaultIDType: string;
   };
   globals: {};
+  globalsSelect: {};
   locale: null;
   user: User & {
     collection: 'users';
+  };
+  jobs: {
+    tasks: unknown;
+    workflows: unknown;
   };
 }
 export interface UserAuthOperations {
@@ -49,6 +129,10 @@ export interface UserAuthOperations {
  */
 export interface User {
   id: string;
+  username: string;
+  role?: ('admin' | 'user') | null;
+  verified?: boolean | null;
+  verificationCode?: string | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -78,6 +162,316 @@ export interface Media {
   height?: number | null;
   focalX?: number | null;
   focalY?: number | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "products".
+ */
+export interface Product {
+  id: string;
+  /**
+   * Add a ribbon to highlight this product
+   */
+  ribbon?: ('new' | 'featured' | 'bestseller' | 'sale' | 'limited' | 'outofstock')[] | null;
+  name: string;
+  slug?: string | null;
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: string;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  images?:
+    | {
+        image: string | Media;
+        altText?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Set base price when no color/size variants exist
+   */
+  pricing?: {
+    price: number;
+    onSale?: boolean | null;
+    /**
+     * Discount percentage
+     */
+    discount?: number | null;
+    /**
+     * Final price after discount (automatically calculated)
+     */
+    discountedPrice?: number | null;
+  };
+  /**
+   * Set base inventory when no color/size variants exist
+   */
+  inventory?: {
+    trackInventory?: boolean | null;
+    quantity?: number | null;
+  };
+  options?: {
+    colors?:
+      | {
+          /**
+           * Select a color
+           */
+          color:
+            | '#000000'
+            | '#FFFFFF'
+            | '#FF0000'
+            | '#000080'
+            | '#0000FF'
+            | '#008000'
+            | '#FFFF00'
+            | '#FFA500'
+            | '#800080'
+            | '#FFC0CB'
+            | '#808080'
+            | '#A52A2A'
+            | '#F5F5DC';
+          pricing?: {
+            price?: number | null;
+            onSale?: boolean | null;
+            /**
+             * Discount percentage
+             */
+            discount?: number | null;
+            /**
+             * Final price after discount (automatically calculated)
+             */
+            discountedPrice?: number | null;
+          };
+          trackInventory?: boolean | null;
+          /**
+           * Enter quantity for this color
+           */
+          quantity?: number | null;
+          id?: string | null;
+        }[]
+      | null;
+    sizes?:
+      | {
+          value: 'xs' | 's' | 'm' | 'l' | 'xl' | 'xxl';
+          pricing?: {
+            price?: number | null;
+            onSale?: boolean | null;
+            /**
+             * Discount percentage
+             */
+            discount?: number | null;
+            /**
+             * Final price after discount (automatically calculated)
+             */
+            discountedPrice?: number | null;
+          };
+          trackInventory?: boolean | null;
+          /**
+           * Enter quantity for this size
+           */
+          quantity?: number | null;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Track inventory and pricing for specific combinations
+     */
+    combinations?:
+      | {
+          combination: {
+            color:
+              | '#000000'
+              | '#FFFFFF'
+              | '#FF0000'
+              | '#000080'
+              | '#0000FF'
+              | '#008000'
+              | '#FFFF00'
+              | '#FFA500'
+              | '#800080'
+              | '#FFC0CB'
+              | '#808080'
+              | '#A52A2A'
+              | '#F5F5DC';
+            colorLabel?: string | null;
+            size: 'xs' | 's' | 'm' | 'l' | 'xl' | 'xxl';
+          };
+          pricing?: {
+            price?: number | null;
+            onSale?: boolean | null;
+            /**
+             * Discount percentage
+             */
+            discount?: number | null;
+            /**
+             * Final price after discount (automatically calculated)
+             */
+            discountedPrice?: number | null;
+          };
+          trackInventory?: boolean | null;
+          /**
+           * Enter quantity for this combination
+           */
+          quantity?: number | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  /**
+   * Select one or more categories for this product
+   */
+  categories: (string | Category)[];
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "categories".
+ */
+export interface Category {
+  id: string;
+  name: string;
+  image: string | Media;
+  /**
+   * Products in this category (automatically updated)
+   */
+  products?: (string | Product)[] | null;
+  description?: string | null;
+  slug?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "orders".
+ */
+export interface Order {
+  id: string;
+  orderId: string;
+  customer: {
+    name: string;
+    email: string;
+    address: string;
+    city: string;
+    state: string;
+    zip: string;
+    country: string;
+  };
+  items?:
+    | {
+        product: string | Product;
+        quantity: number;
+        price: number;
+        color?: string | null;
+        size?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  totalPrice: number;
+  status?: ('pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled') | null;
+  createdAt: string;
+  updatedAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "carts".
+ */
+export interface Cart {
+  id: string;
+  user: string | User;
+  items?:
+    | {
+        id: string | null;
+        name: string;
+        price: number;
+        image: string;
+        quantity: number;
+        maxQuantity?: number | null;
+        color?: string | null;
+        size?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "reviews".
+ */
+export interface Review {
+  id: string;
+  product: string | Product;
+  user?: (string | null) | User;
+  email: string;
+  order?: (string | null) | Order;
+  rating: number;
+  title: string;
+  content: string;
+  images?:
+    | {
+        image: string | Media;
+        id?: string | null;
+      }[]
+    | null;
+  verifiedPurchase?: boolean | null;
+  /**
+   * Should this review be displayed publicly?
+   */
+  approved?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-locked-documents".
+ */
+export interface PayloadLockedDocument {
+  id: string;
+  document?:
+    | ({
+        relationTo: 'users';
+        value: string | User;
+      } | null)
+    | ({
+        relationTo: 'media';
+        value: string | Media;
+      } | null)
+    | ({
+        relationTo: 'products';
+        value: string | Product;
+      } | null)
+    | ({
+        relationTo: 'categories';
+        value: string | Category;
+      } | null)
+    | ({
+        relationTo: 'orders';
+        value: string | Order;
+      } | null)
+    | ({
+        relationTo: 'carts';
+        value: string | Cart;
+      } | null)
+    | ({
+        relationTo: 'reviews';
+        value: string | Review;
+      } | null);
+  globalSlug?: string | null;
+  user: {
+    relationTo: 'users';
+    value: string | User;
+  };
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -112,6 +506,256 @@ export interface PayloadMigration {
   batch?: number | null;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "users_select".
+ */
+export interface UsersSelect<T extends boolean = true> {
+  username?: T;
+  role?: T;
+  verified?: T;
+  verificationCode?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  email?: T;
+  resetPasswordToken?: T;
+  resetPasswordExpiration?: T;
+  salt?: T;
+  hash?: T;
+  loginAttempts?: T;
+  lockUntil?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "media_select".
+ */
+export interface MediaSelect<T extends boolean = true> {
+  alt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "products_select".
+ */
+export interface ProductsSelect<T extends boolean = true> {
+  ribbon?: T;
+  name?: T;
+  slug?: T;
+  description?: T;
+  images?:
+    | T
+    | {
+        image?: T;
+        altText?: T;
+        id?: T;
+      };
+  pricing?:
+    | T
+    | {
+        price?: T;
+        onSale?: T;
+        discount?: T;
+        discountedPrice?: T;
+      };
+  inventory?:
+    | T
+    | {
+        trackInventory?: T;
+        quantity?: T;
+      };
+  options?:
+    | T
+    | {
+        colors?:
+          | T
+          | {
+              color?: T;
+              pricing?:
+                | T
+                | {
+                    price?: T;
+                    onSale?: T;
+                    discount?: T;
+                    discountedPrice?: T;
+                  };
+              trackInventory?: T;
+              quantity?: T;
+              id?: T;
+            };
+        sizes?:
+          | T
+          | {
+              value?: T;
+              pricing?:
+                | T
+                | {
+                    price?: T;
+                    onSale?: T;
+                    discount?: T;
+                    discountedPrice?: T;
+                  };
+              trackInventory?: T;
+              quantity?: T;
+              id?: T;
+            };
+        combinations?:
+          | T
+          | {
+              combination?:
+                | T
+                | {
+                    color?: T;
+                    colorLabel?: T;
+                    size?: T;
+                  };
+              pricing?:
+                | T
+                | {
+                    price?: T;
+                    onSale?: T;
+                    discount?: T;
+                    discountedPrice?: T;
+                  };
+              trackInventory?: T;
+              quantity?: T;
+              id?: T;
+            };
+      };
+  categories?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "categories_select".
+ */
+export interface CategoriesSelect<T extends boolean = true> {
+  name?: T;
+  image?: T;
+  products?: T;
+  description?: T;
+  slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "orders_select".
+ */
+export interface OrdersSelect<T extends boolean = true> {
+  orderId?: T;
+  customer?:
+    | T
+    | {
+        name?: T;
+        email?: T;
+        address?: T;
+        city?: T;
+        state?: T;
+        zip?: T;
+        country?: T;
+      };
+  items?:
+    | T
+    | {
+        product?: T;
+        quantity?: T;
+        price?: T;
+        color?: T;
+        size?: T;
+        id?: T;
+      };
+  totalPrice?: T;
+  status?: T;
+  createdAt?: T;
+  updatedAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "carts_select".
+ */
+export interface CartsSelect<T extends boolean = true> {
+  user?: T;
+  items?:
+    | T
+    | {
+        id?: T;
+        name?: T;
+        price?: T;
+        image?: T;
+        quantity?: T;
+        maxQuantity?: T;
+        color?: T;
+        size?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "reviews_select".
+ */
+export interface ReviewsSelect<T extends boolean = true> {
+  product?: T;
+  user?: T;
+  email?: T;
+  order?: T;
+  rating?: T;
+  title?: T;
+  content?: T;
+  images?:
+    | T
+    | {
+        image?: T;
+        id?: T;
+      };
+  verifiedPurchase?: T;
+  approved?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-locked-documents_select".
+ */
+export interface PayloadLockedDocumentsSelect<T extends boolean = true> {
+  document?: T;
+  globalSlug?: T;
+  user?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-preferences_select".
+ */
+export interface PayloadPreferencesSelect<T extends boolean = true> {
+  user?: T;
+  key?: T;
+  value?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-migrations_select".
+ */
+export interface PayloadMigrationsSelect<T extends boolean = true> {
+  name?: T;
+  batch?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

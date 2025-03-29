@@ -1,4 +1,12 @@
-import type { CollectionConfig } from 'payload'
+import { User } from '@/payload-types'
+import { CollectionConfig } from 'payload'
+
+const beforeLogin = async ({ user }: { user: User }) => {
+  if (user.role !== 'admin') {
+    throw new Error('Only admin users can access the admin panel')
+  }
+  return user
+}
 
 export const Users: CollectionConfig = {
   slug: 'users',
@@ -6,8 +14,48 @@ export const Users: CollectionConfig = {
     useAsTitle: 'email',
   },
   auth: true,
+  access: {
+    read: ({ req }) => req.user?.role === 'admin' || { id: { equals: req.user?.id } },
+    create: ({ req }) => req.user?.role === 'admin',
+    update: ({ req }) => req.user?.role === 'admin' || { id: { equals: req.user?.id } },
+    delete: ({ req }) => req.user?.role === 'admin',
+  },
+
   fields: [
-    // Email added by default
-    // Add more fields as needed
+    {
+      name: 'username',
+      type: 'text',
+      required: true,
+    },
+    {
+      name: 'role',
+      type: 'select',
+      options: ['admin', 'user'],
+      defaultValue: 'user',
+      access: {
+        update: ({ req }) => req.user?.role === 'admin', // Only admins can change roles
+      },
+    },
+    {
+      name: 'verified',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        position: 'sidebar',
+      },
+      access: {
+        update: ({ req }) => req.user?.role === 'admin', // Only admins can change roles
+      },
+    },
+    {
+      name: 'verificationCode',
+      type: 'text',
+      admin: {
+        position: 'sidebar',
+      },
+      access: {
+        update: ({ req }) => req.user?.role === 'admin', // Only admins can change roles
+      },
+    },
   ],
 }
