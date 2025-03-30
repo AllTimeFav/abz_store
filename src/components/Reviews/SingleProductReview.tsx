@@ -4,6 +4,7 @@
 import { useState, useRef } from 'react'
 import { Star, Upload, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 
 export default function SingleProductReview({
   orderId,
@@ -79,6 +80,7 @@ export default function SingleProductReview({
         router.push(`/`)
       }, 2000)
     } catch (error) {
+      console.log('error : ', error)
       setNotification({
         message: 'Failed to submit review. Please try again.',
         type: 'error',
@@ -94,7 +96,7 @@ export default function SingleProductReview({
 
       <div className="mb-4 p-4 bg-blue-50 rounded-md">
         <p className="text-sm text-blue-800">
-          You're reviewing a product from your order #{orderId}
+          You are reviewing a product from your order #{orderId}
         </p>
       </div>
 
@@ -169,22 +171,36 @@ export default function SingleProductReview({
         <div>
           <label className="block text-sm font-medium mb-1">Images (optional)</label>
           <div className="flex flex-wrap gap-2 mb-2">
-            {images.map((file, index) => (
-              <div key={index} className="relative">
-                <img
-                  src={URL.createObjectURL(file)}
-                  alt="Preview"
-                  className="h-24 w-24 object-cover rounded"
-                />
-                <button
-                  type="button"
-                  onClick={() => removeImage(index)}
-                  className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </div>
-            ))}
+            {images.map((file, index) => {
+              // Create object URL
+              const objectUrl = URL.createObjectURL(file)
+
+              return (
+                <div key={index} className="relative aspect-square">
+                  <Image
+                    src={objectUrl}
+                    alt={`Upload preview ${index + 1}`}
+                    fill
+                    sizes="20vw"
+                    className="object-cover rounded-md"
+                    placeholder="blur"
+                    blurDataURL={objectUrl}
+                    onLoadingComplete={() => URL.revokeObjectURL(objectUrl)}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      removeImage(index)
+                      URL.revokeObjectURL(objectUrl)
+                    }}
+                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                    aria-label="Remove image"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              )
+            })}
           </div>
           <input
             type="file"

@@ -1,4 +1,4 @@
-import { CollectionConfig, getPayload } from 'payload'
+import { CollectionConfig } from 'payload'
 import { generateReviewEmail } from '@/services/email-templates'
 
 const Orders: CollectionConfig = {
@@ -14,7 +14,7 @@ const Orders: CollectionConfig = {
   },
   hooks: {
     afterChange: [
-      async ({ doc, operation, previousDoc, req }) => {
+      async ({ doc, req }) => {
         // Only send email when status changes to 'delivered'
         if (doc.status === 'delivered') {
           try {

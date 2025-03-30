@@ -16,7 +16,7 @@ enum MODE {
 
 export default function LoginPage() {
   const router = useRouter()
-  const { setUser, setToken } = useAuthStore()
+  const { setUser } = useAuthStore()
 
   const [mode, setMode] = useState<MODE>(MODE.LOGIN)
   const [username, setUsername] = useState('')
@@ -98,6 +98,7 @@ export default function LoginPage() {
       }
     } catch (err) {
       setError('Something went wrong')
+      console.log('error ', err)
     } finally {
       setIsLoading(false)
     }
@@ -226,7 +227,7 @@ export default function LoginPage() {
               }}
               className="text-sm text-indigo-600 hover:text-indigo-500"
             >
-              Don't have an account? Register
+              Do not have an account? Register
             </button>
           )}
           {mode === MODE.REGISTER && (

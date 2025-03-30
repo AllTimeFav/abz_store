@@ -21,7 +21,6 @@ type FormInputs = {
 export default function CheckoutPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const { items, totalPrice, clearCart } = useCartStore()
-  const [user, setUser] = useState<{ name: string; email: string } | null>(null)
   const [isLoading, setIsLoading] = useState(false) // Loading state
   const [orderSuccess, setOrderSuccess] = useState(false) // Success message state
   const [cartError, setCartError] = useState<string | null>(null) // Cart error state
@@ -38,17 +37,14 @@ export default function CheckoutPage() {
   useEffect(() => {
     const checkUser = async () => {
       const { authenticated, user } = await authService.checkAuth()
-      console.log('authn : ', authenticated)
       setIsLoggedIn(authenticated)
       if (authenticated) {
-        setUser(user.user)
-        setValue('name', user.user.username)
-        setValue('email', user.user.email)
-        console.log('user : ', user)
+        setValue('name', user?.user.username)
+        setValue('email', user?.user.email)
       }
     }
     checkUser()
-  }, [])
+  }, [setValue])
 
   const onSubmit: SubmitHandler<FormInputs> = async (data) => {
     try {
@@ -81,7 +77,7 @@ export default function CheckoutPage() {
           size: item.size,
         })),
         totalPrice: totalPrice,
-        status: 'pending',
+        status: 'pending' as const,
       }
 
       const result = await manageOrders.createOrder(orderData)

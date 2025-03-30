@@ -1,6 +1,7 @@
-import { useCartStore } from '@/store/cart'
+import SaveCart from '@/store/saveCart'
 import { LoginResponse, RegisterResponse, VerificationResponse } from '@/types/user'
 import Cookies from 'js-cookie'
+import { User } from 'payload'
 
 const API_URL = '/api/auth'
 
@@ -52,7 +53,7 @@ export const authService = {
     return res.json()
   },
 
-  checkAuth: async (): Promise<{ authenticated: boolean; user?: any }> => {
+  checkAuth: async (): Promise<{ authenticated: boolean; user?: User }> => {
     const token = Cookies.get('token')
     if (!token) return { authenticated: false }
 
@@ -78,8 +79,7 @@ export const authService = {
 
   logout: async () => {
     try {
-      const { saveCart } = useCartStore()
-      await saveCart()
+      SaveCart()
       Cookies.remove('token')
       window.location.href = '/login'
     } catch (error) {

@@ -4,7 +4,6 @@ import type React from 'react'
 
 import { useState } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Facebook, Instagram, Youtube, Twitter } from 'lucide-react'

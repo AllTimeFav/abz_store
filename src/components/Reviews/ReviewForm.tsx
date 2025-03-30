@@ -2,7 +2,7 @@ import { Star } from 'lucide-react'
 import { useState } from 'react'
 
 // Reusable form component
-export function ReviewForm({
+export default function ReviewForm({
   onSubmit,
   initialRating,
   initialTitle,

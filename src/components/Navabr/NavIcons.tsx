@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
-import { User, Search, Sun, Moon, ShoppingCart } from 'lucide-react'
+import { User, Search } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { CartIcon } from '@/components/Navabr/CartIcon'
 import { Button } from '../ui/button'

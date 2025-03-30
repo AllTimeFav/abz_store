@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import payload, { getPayload } from 'payload'
+import { getPayload } from 'payload'
 import config from '@/payload.config'
 
 export async function GET(req: Request, { params }: { params: { userId: string } }) {

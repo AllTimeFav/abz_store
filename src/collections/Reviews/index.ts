@@ -103,12 +103,6 @@ const Reviews: CollectionConfig = {
         return data
       },
     ],
-    afterChange: [
-      async ({ doc }) => {
-        // When a user registers, we can update their past reviews
-        // to associate with their new account
-      },
-    ],
   },
 }
 

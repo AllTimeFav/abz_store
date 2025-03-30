@@ -2,6 +2,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { getPayload } from 'payload'
 import config from '@payload-config'
+import { Category } from '@/payload-types'
 
 const CategoryList = async () => {
   const payload = await getPayload({ config: config })
@@ -13,7 +14,7 @@ const CategoryList = async () => {
   return (
     <div className="px-4 overflow-x-scroll scrollbar-hide">
       <div className="flex gap-4 md:gap-8">
-        {categories.docs.map((category) => (
+        {categories.docs.map((category: Category) => (
           <Link
             key={category.id}
             href={`/list?cat=${category.slug}`}
@@ -21,13 +22,21 @@ const CategoryList = async () => {
           >
             <div className="relative bg-slate-100 w-full h-96">
               <Image
-                src={category.image?.url || '/category.png'}
+                src={
+                  typeof category.image === 'object' && category.image?.url
+                    ? category.image.url
+                    : '/category.png'
+                }
                 alt={category.name}
                 fill
                 sizes="209vw"
                 className="object-cover"
                 placeholder="blur"
-                blurDataURL={category.image?.url || '/category.png'}
+                blurDataURL={
+                  typeof category.image === 'object' && category.image?.url
+                    ? category.image.url
+                    : '/category.png'
+                }
               />
             </div>
             <h1 className="mt-8 font-light text-xl tracking-wider">{category.name}</h1>

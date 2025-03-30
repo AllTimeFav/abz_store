@@ -1,9 +1,35 @@
 import { useCartStore } from '@/store/cart'
 
 const API_URL = '/api/orders'
+interface Customer {
+  name: string
+  email: string
+  address: string
+  city: string
+  state: string
+  zip: string
+  country: string
+}
+
+interface OrderItem {
+  product: string // Assuming you're using product ID here
+  image?: string // Added image to match your usage
+  quantity: number
+  price: number
+  color?: string | null
+  size?: string | null
+  id?: string | null
+}
+
+interface OrderData {
+  customer: Customer
+  items: OrderItem[]
+  totalPrice: number
+  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
+}
 
 export const manageOrders = {
-  createOrder: async (orderData: any) => {
+  createOrder: async (orderData: OrderData) => {
     try {
       const userId = useCartStore.getState().userId
       const response = await fetch(`${API_URL}?userId=${userId}`, {

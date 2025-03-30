@@ -1,18 +1,62 @@
 'use client'
 import { getColorName } from '@/utils/colorMap'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import SizeSelector from './SizeSelector'
 import ColorSelector from './ColorSelector'
 import { useCartStore } from '@/store/cart'
 import { QuantitySelector } from '../QuantitySelector'
 import SaveCart from '@/store/saveCart'
+import { Product } from '@/payload-types'
 
 interface Props {
-  product: any
-  options: any
+  product: Product
 }
 
-export default function CustomizeProduct({ product, options }: Props) {
+type ColorOption = {
+  color: string
+  pricing?: {
+    price?: number | null
+    onSale?: boolean | null
+    discount?: number | null
+    discountedPrice?: number | null
+  }
+  trackInventory?: boolean | null
+  quantity?: number | null
+  id?: string | null
+}
+
+type SizeOption = {
+  value: string
+  pricing?: {
+    price?: number | null
+    onSale?: boolean | null
+    discount?: number | null
+    discountedPrice?: number | null
+  }
+  trackInventory?: boolean | null
+  quantity?: number | null
+  id?: string | null
+}
+
+type CombinationOption = {
+  combination: {
+    color: string
+    colorLabel?: string | null
+    size: string
+  }
+  pricing?: {
+    price?: number | null
+    onSale?: boolean | null
+    discount?: number | null
+    discountedPrice?: number | null
+  }
+  trackInventory?: boolean | null
+  quantity?: number | null
+  id?: string | null
+}
+
+export default function CustomizeProduct({ product }: Props) {
+  const options = product.options
   const hasColors = (options?.colors?.length || 0) > 0
   const hasSizes = (options?.sizes?.length || 0) > 0
   const hasCombinations = (options?.combinations?.length || 0) > 0
@@ -26,115 +70,150 @@ export default function CustomizeProduct({ product, options }: Props) {
   const addItem = useCartStore((state) => state.addItem)
 
   // Get available colors and sizes from combinations
-  const availableColors = hasCombinations
-    ? Array.from(new Set(options.combinations?.map((c: any) => c.combination.color)))
-    : options.colors?.map((c: any) => c.color) || []
+  const availableColors = useMemo(() => {
+    return hasCombinations
+      ? Array.from(new Set(options?.combinations?.map((c) => c.combination.color)))
+      : options?.colors?.map((c) => c.color) || []
+  }, [hasCombinations, options?.combinations, options?.colors])
 
-  const availableSizes = hasCombinations
-    ? Array.from(new Set(options.combinations?.map((c: any) => c.combination.size)))
-    : options.sizes?.map((s: any) => s.value) || []
+  const availableSizes = useMemo(() => {
+    return hasCombinations
+      ? Array.from(new Set(options?.combinations?.map((c) => c.combination.size)))
+      : options?.sizes?.map((s) => s.value) || []
+  }, [hasCombinations, options?.combinations, options?.sizes])
 
   // Check if a combination exists
-  const isCombinationAvailable = (color: string, size: string) => {
-    return (
-      options.combinations?.some(
-        (c: any) => c.combination.color === color && c.combination.size === size,
-      ) || false
-    )
-  }
+  const isCombinationAvailable = useCallback(
+    (color: string, size: string) => {
+      return (
+        options?.combinations?.some(
+          (c: CombinationOption) => c.combination.color === color && c.combination.size === size,
+        ) || false
+      )
+    },
+    [options?.combinations],
+  )
 
   // Get combination details if exists
-  const getCombinationStock = (color: string, size: string) => {
-    const combo = options.combinations?.find(
-      (c: any) => c.combination.color === color && c.combination.size === size,
-    )
-    return combo?.trackInventory ? combo.quantity : 999
-  }
+  const getCombinationStock = useCallback(
+    (color: string, size: string) => {
+      const combo = options?.combinations?.find(
+        (c: CombinationOption) => c.combination.color === color && c.combination.size === size,
+      )
+      return combo?.trackInventory ? combo.quantity || 0 : 999
+    },
+    [options?.combinations],
+  )
 
   // Function to get price and stock for color-only selection
-  const getColorDetails = (color: string) => {
-    const colorVariant = options?.colors?.find((v: any) => v.color === color)
-    return {
-      price: colorVariant?.pricing.discountedPrice || colorVariant?.pricing.price || 0,
-      stock: colorVariant?.trackInventory ? colorVariant.quantity : 999,
-    }
-  }
+  const getColorDetails = useCallback(
+    (color: string) => {
+      const colorVariant = options?.colors?.find((v: ColorOption) => v.color === color)
+      return {
+        price: colorVariant?.pricing?.discountedPrice || colorVariant?.pricing?.price || 0,
+        stock: colorVariant?.trackInventory ? colorVariant.quantity || 0 : 999,
+      }
+    },
+    [options?.colors],
+  )
 
   // Function to get price and stock for size-only selection
-  const getSizeDetails = (size: string) => {
-    const sizeVariant = options?.sizes?.find((v: any) => v.value === size)
-    return {
-      price: sizeVariant?.pricing.discountedPrice || sizeVariant?.pricing.price || 0,
-      stock: sizeVariant?.trackInventory ? sizeVariant.quantity : 999,
-    }
-  }
+  const getSizeDetails = useCallback(
+    (size: string) => {
+      const sizeVariant = options?.sizes?.find((v: SizeOption) => v.value === size)
+      return {
+        price: sizeVariant?.pricing?.discountedPrice || sizeVariant?.pricing?.price || 0,
+        stock: sizeVariant?.trackInventory ? sizeVariant.quantity || 0 : 999,
+      }
+    },
+    [options?.sizes],
+  )
 
   // Function to get price and stock for color-size combination
-  const getCombinationDetails = (color: string, size: string) => {
-    const combination = options?.combinations?.find(
-      (combo: any) => combo.combination.color === color && combo.combination.size === size,
-    )
-    return {
-      price: combination?.pricing.discountedPrice || combination?.pricing.price || 0,
-      stock: combination?.trackInventory ? combination.quantity : 999,
-    }
-  }
+  const getCombinationDetails = useCallback(
+    (color: string, size: string) => {
+      const combination = options?.combinations?.find(
+        (combo: CombinationOption) =>
+          combo.combination.color === color && combo.combination.size === size,
+      )
+      return {
+        price: combination?.pricing?.discountedPrice || combination?.pricing?.price || 0,
+        stock: combination?.trackInventory ? combination.quantity || 0 : 999,
+      }
+    },
+    [options?.combinations],
+  )
 
   // Update selection and details
-  const updateSelection = (newColor?: string | null, newSize?: string | null) => {
-    // Don't update if invalid combination
-    if (hasCombinations && newColor && newSize && !isCombinationAvailable(newColor, newSize)) {
-      return
-    }
-
-    if (newColor !== undefined) setSelectedColor(newColor)
-    if (newSize !== undefined) setSelectedSize(newSize)
-
-    let details = { price: 0, stock: 0 }
-
-    if (hasCombinations) {
-      // Check combinations first if they exist
-      if (newColor && newSize) {
-        details = getCombinationDetails(newColor, newSize)
+  const updateSelection = useCallback(
+    (newColor?: string | null, newSize?: string | null) => {
+      // Don't update if invalid combination
+      if (hasCombinations && newColor && newSize && !isCombinationAvailable(newColor, newSize)) {
+        return
       }
-    } else if (hasColors && hasSizes) {
-      // If no combinations but both colors and sizes exist
-      if (newColor && newSize) {
-        const colorDetails = getColorDetails(newColor)
-        const sizeDetails = getSizeDetails(newSize)
-        details = {
-          price: (colorDetails.price || 0) + (sizeDetails.price || 0),
-          stock: Math.min(colorDetails.stock, sizeDetails.stock),
+
+      if (newColor !== undefined) setSelectedColor(newColor)
+      if (newSize !== undefined) setSelectedSize(newSize)
+
+      let details = { price: 0, stock: 0 }
+
+      if (hasCombinations) {
+        // Check combinations first if they exist
+        if (newColor && newSize) {
+          details = getCombinationDetails(newColor, newSize)
         }
+      } else if (hasColors && hasSizes) {
+        // If no combinations but both colors and sizes exist
+        if (newColor && newSize) {
+          const colorDetails = getColorDetails(newColor)
+          const sizeDetails = getSizeDetails(newSize)
+          details = {
+            price: (colorDetails.price || 0) + (sizeDetails.price || 0),
+            stock: Math.min(colorDetails.stock, sizeDetails.stock),
+          }
+        }
+      } else if (hasColors && newColor) {
+        // Only colors available
+        details = getColorDetails(newColor)
+      } else if (hasSizes && newSize) {
+        // Only sizes available
+        details = getSizeDetails(newSize)
       }
-    } else if (hasColors && newColor) {
-      // Only colors available
-      details = getColorDetails(newColor)
-    } else if (hasSizes && newSize) {
-      // Only sizes available
-      details = getSizeDetails(newSize)
-    }
 
-    setCurrentPrice(details.price || null)
-    setAvailableStock(details.stock)
-    setQuantity(1)
-  }
+      setCurrentPrice(details.price || null)
+      setAvailableStock(details.stock)
+      setQuantity(1)
+    },
+    [
+      hasCombinations,
+      hasColors,
+      hasSizes,
+      isCombinationAvailable,
+      getCombinationDetails,
+      getColorDetails,
+      getSizeDetails,
+    ],
+  )
 
   // Initialize first option
   useEffect(() => {
-    if (hasCombinations) {
-      const firstCombo = options?.combinations?.[0]?.combination
-      if (firstCombo) {
-        updateSelection(firstCombo.color, firstCombo.size)
+    const initializeSelection = () => {
+      if (hasCombinations) {
+        const firstCombo = options?.combinations?.[0]?.combination
+        if (firstCombo) {
+          updateSelection(firstCombo.color, firstCombo.size)
+        }
+      } else if (hasColors && !hasSizes) {
+        updateSelection(options?.colors?.[0]?.color, null)
+      } else if (!hasColors && hasSizes) {
+        updateSelection(null, options?.sizes?.[0]?.value)
+      } else if (hasColors && hasSizes) {
+        updateSelection(options?.colors?.[0]?.color, options?.sizes?.[0]?.value)
       }
-    } else if (hasColors && !hasSizes) {
-      updateSelection(options?.colors?.[0]?.color, null)
-    } else if (!hasColors && hasSizes) {
-      updateSelection(null, options?.sizes?.[0]?.value)
-    } else if (hasColors && hasSizes) {
-      updateSelection(options?.colors?.[0]?.color, options?.sizes?.[0]?.value)
     }
-  }, [options])
+
+    initializeSelection()
+  }, [options, hasColors, hasCombinations, hasSizes, updateSelection])
 
   // Handle color selection
   const handleColorSelect = (color: string) => {
@@ -146,47 +225,47 @@ export default function CustomizeProduct({ product, options }: Props) {
     updateSelection(selectedColor, size)
   }
 
+  const getSelectedVariant = useCallback(() => {
+    if (hasCombinations && selectedColor && selectedSize) {
+      return options?.combinations?.find(
+        (c: CombinationOption) =>
+          c.combination.color === selectedColor && c.combination.size === selectedSize,
+      )
+    } else if (hasColors && selectedColor) {
+      return options?.colors?.find((c: ColorOption) => c.color === selectedColor)
+    } else if (hasSizes && selectedSize) {
+      return options?.sizes?.find((s: SizeOption) => s.value === selectedSize)
+    }
+    return null
+  }, [hasCombinations, hasColors, hasSizes, selectedColor, selectedSize, options])
+
+  const getVariantPrice = useCallback(() => {
+    const variant = getSelectedVariant()
+    return variant?.pricing?.discountedPrice || variant?.pricing?.price || 0
+  }, [getSelectedVariant])
+
   const handleAddToCart = async () => {
-    const selectedVariant = getSelectedVariant()
+    const variant = getSelectedVariant()
     const variantPrice = getVariantPrice()
+    const imageUrl =
+      typeof product.images?.[0]?.image === 'string'
+        ? product.images[0].image
+        : product.images?.[0]?.image?.url || ''
 
     addItem({
       id: product.id,
       name: product.name,
       price: variantPrice,
-      image: product.images[0].image.url,
+      image: imageUrl,
       quantity,
-      color: getColorName(selectedColor || ''),
-      size: selectedSize,
-      maxQuantity: selectedVariant?.trackInventory ? selectedVariant.quantity : undefined,
+      color: selectedColor ? getColorName(selectedColor) : undefined,
+      size: selectedSize || undefined,
+      maxQuantity: variant?.trackInventory ? variant.quantity : undefined,
     })
     await SaveCart()
   }
 
-  const getSelectedVariant = () => {
-    if (hasCombinations && selectedColor && selectedSize) {
-      return options.combinations?.find(
-        (c: any) => c.combination.color === selectedColor && c.combination.size === selectedSize,
-      )
-    } else if (hasColors && selectedColor) {
-      return options.colors?.find((c: any) => c.color === selectedColor)
-    } else if (hasSizes && selectedSize) {
-      return options.sizes?.find((s: any) => s.value === selectedSize)
-    }
-    return null
-  }
-
-  const getVariantPrice = () => {
-    const variant = getSelectedVariant()
-    return variant?.pricing.discountedPrice || variant?.pricing.price || 0
-  }
-
-  const getMaxQuantity = () => {
-    const variant = getSelectedVariant()
-    return variant?.trackInventory ? variant.quantity : 999
-  }
-
-  const isValidCombination = () => {
+  const isValidCombination = useCallback(() => {
     // If combinations exist, need both color and size
     if (hasCombinations) {
       return selectedColor && selectedSize && isCombinationAvailable(selectedColor, selectedSize)
@@ -208,7 +287,7 @@ export default function CustomizeProduct({ product, options }: Props) {
     }
 
     return false
-  }
+  }, [hasCombinations, hasColors, hasSizes, selectedColor, selectedSize, isCombinationAvailable])
 
   return (
     <div className="flex flex-col gap-6">
@@ -246,7 +325,7 @@ export default function CustomizeProduct({ product, options }: Props) {
               style={{ backgroundColor: selectedColor }}
             />
             <span className="font-medium">
-              {getColorName(selectedColor)} - {selectedSize.toUpperCase()}
+              {getColorName(selectedColor)} - {selectedSize?.toUpperCase()}
             </span>
             {hasCombinations && (
               <span className="text-gray-500">

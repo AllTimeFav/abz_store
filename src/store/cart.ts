@@ -9,7 +9,7 @@ export type CartItem = {
   quantity: number
   color?: string | null
   size?: string | null
-  maxQuantity?: number
+  maxQuantity?: number | null
 }
 
 type CartStore = {

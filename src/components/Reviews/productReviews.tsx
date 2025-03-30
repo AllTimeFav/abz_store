@@ -89,15 +89,32 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
                   {/* Review images */}
                   {review.images && review.images.length > 0 && (
                     <div className="flex gap-2 mt-3">
-                      {review.images.map((image, idx) => (
-                        <div key={idx} className="h-20 w-20 rounded overflow-hidden">
-                          <img
-                            src={image.image.url || ''}
-                            alt={`Review image ${idx + 1}`}
-                            className="h-full w-full object-cover"
-                          />
-                        </div>
-                      ))}
+                      {review.images.map((image, idx) => {
+                        // Type-safe image URL extraction
+                        let imageUrl = '/placeholder-image.png'
+
+                        if (image?.image) {
+                          if (typeof image.image === 'string') {
+                            imageUrl = image.image
+                          } else if (image.image.url) {
+                            imageUrl = image.image.url
+                          }
+                        }
+
+                        return (
+                          <div key={idx} className="h-20 w-20 rounded overflow-hidden relative">
+                            <Image
+                              src={imageUrl}
+                              alt={`Review image ${idx + 1}`}
+                              fill
+                              sizes="20vw"
+                              className="object-cover"
+                              placeholder="blur"
+                              blurDataURL={imageUrl}
+                            />
+                          </div>
+                        )
+                      })}
                     </div>
                   )}
                 </div>

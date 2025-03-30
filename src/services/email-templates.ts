@@ -47,7 +47,11 @@ export const generateReviewEmail = (order: Order) => ({
               <div style="display: flex; gap: 16px; align-items: center;">
                 ${
                   product?.images && process.env.NEXT_PUBLIC_SERVER_URL
-                    ? `<img src="${process.env.NEXT_PUBLIC_SERVER_URL}${product.images[0].image.url}" alt="${product.name}" class="product-image">`
+                    ? `<img src="${process.env.NEXT_PUBLIC_SERVER_URL}${
+                        typeof product.images[0].image === 'object' && product.images[0].image?.url
+                          ? product.images[0].image.url
+                          : '/default-product.png'
+                      }" alt="${product.name}" class="product-image">`
                     : '<div style="width:100px;height:100px;background:#f3f4f6;"></div>'
                 }
                 <div>

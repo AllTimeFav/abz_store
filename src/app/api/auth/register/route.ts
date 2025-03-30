@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getPayload } from 'payload'
-import config, { transporter } from '@/payload.config'
+import config from '@/payload.config'
 import { generateVerificationCode } from '@/lib/utils'
 
 export async function POST(req: Request) {
@@ -28,7 +28,7 @@ export async function POST(req: Request) {
     const verificationCode = generateVerificationCode()
 
     // ✅ Create user directly in Payload CMS
-    const user = await payload.create({
+    await payload.create({
       collection: 'users',
       data: {
         email,
@@ -38,8 +38,6 @@ export async function POST(req: Request) {
         verificationCode,
       },
     })
-
-    console.log('Code : ', verificationCode)
 
     payload.email.sendEmail({
       to: email,
@@ -51,16 +49,6 @@ export async function POST(req: Request) {
         <p>If you did not register, please ignore this email.</p>
       `,
     })
-    // payload.email.sendEmail({
-    //   to: email,
-    //   subject: 'Verify Your Email',
-    //   text: `
-    //     <p>Hello,</p>
-    //     <p>Thank you for registering! Please verify your email by using the code below:</p>
-    //     <h2>${verificationCode}</h2>
-    //     <p>If you did not register, please ignore this email.</p>
-    //   `,
-    // })
 
     return NextResponse.json({
       success: true,

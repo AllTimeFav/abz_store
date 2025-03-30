@@ -1,19 +1,18 @@
-// app/review/page.tsx
 'use client'
 
-import React from 'react'
+import React, { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import SingleProductReview from '@/components/Reviews/SingleProductReview'
-import MultiProductReview from '@/components/reviews/MultiProductReview'
+import MultiProductReview from '@/components/Reviews/MultiProductReview'
 
-export default function ReviewPage() {
+function ReviewPageContent() {
   const searchParams = useSearchParams()
   const orderId = searchParams.get('order')
   const productId = searchParams.get('product')
   const email = searchParams.get('user')
 
   if (orderId && productId) {
-    return <SingleProductReview orderId={orderId} productId={productId} email={email} />
+    return <SingleProductReview orderId={orderId} productId={productId} email={email || ''} />
   }
 
   if (orderId) {
@@ -25,5 +24,13 @@ export default function ReviewPage() {
       <h1 className="text-2xl font-bold mb-6">Review Products</h1>
       <p>No valid review link provided.</p>
     </div>
+  )
+}
+
+export default function ReviewPage() {
+  return (
+    <Suspense fallback={<p className="text-center">Loading...</p>}>
+      <ReviewPageContent />
+    </Suspense>
   )
 }

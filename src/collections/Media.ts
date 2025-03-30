@@ -3,7 +3,7 @@ import type { CollectionConfig } from 'payload'
 export const Media: CollectionConfig = {
   slug: 'media',
   access: {
-    read: ({ req }) => req.user?.role === 'admin',
+    read: () => true,
   },
   fields: [
     {

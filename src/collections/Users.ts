@@ -1,12 +1,4 @@
-import { User } from '@/payload-types'
 import { CollectionConfig } from 'payload'
-
-const beforeLogin = async ({ user }: { user: User }) => {
-  if (user.role !== 'admin') {
-    throw new Error('Only admin users can access the admin panel')
-  }
-  return user
-}
 
 export const Users: CollectionConfig = {
   slug: 'users',

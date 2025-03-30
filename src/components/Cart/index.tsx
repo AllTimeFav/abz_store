@@ -3,7 +3,6 @@
 import { ShoppingCart, X } from 'lucide-react'
 import { useCartStore } from '@/store/cart'
 import Image from 'next/image'
-import { getColorName } from '@/utils/colorMap'
 import { useRouter } from 'next/navigation'
 import { Button } from '../ui/button'
 
@@ -78,7 +77,7 @@ export function Cart({ isCheckoutPage = false }: CartProps) {
                     }
                     className="rounded border p-1 text-sm"
                   >
-                    {[...Array(item.maxQuantity || 10, 9)].map((_, i) => (
+                    {Array.from({ length: item.maxQuantity || 10 }, (_, i) => (
                       <option key={i + 1} value={i + 1}>
                         {i + 1}
                       </option>

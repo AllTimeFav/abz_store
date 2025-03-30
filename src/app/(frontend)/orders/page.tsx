@@ -86,11 +86,9 @@ export default function OrdersPage() {
           router.push('/login')
           return
         }
-        setUser(user.user)
-        console.log('user ', user)
-
+        setUser(user?.user.username)
         // Fetch orders
-        const response = await fetch(`/api/orders?id=${user.user.id}`, {
+        const response = await fetch(`/api/orders?id=${user?.user.id}`, {
           method: 'GET',
         })
         if (response.ok) {
@@ -106,7 +104,7 @@ export default function OrdersPage() {
     }
 
     fetchData()
-  }, [])
+  }, [router])
 
   if (isLoading) {
     return (
@@ -118,7 +116,7 @@ export default function OrdersPage() {
 
   return (
     <>
-      {/* <Navbar /> */}
+      <Navbar />
       <div className="mt-24 container mx-auto px-4 py-8 max-w-6xl">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Your Orders</h1>
@@ -133,7 +131,7 @@ export default function OrdersPage() {
           <div className="bg-white rounded-lg shadow p-8 text-center">
             <h3 className="text-lg font-medium text-gray-900">No orders found</h3>
             <p className="mt-2 text-gray-600">
-              You haven't placed any orders yet. Start shopping to see orders here.
+              You have not placed any orders yet. Start shopping to see orders here.
             </p>
             <button
               onClick={() => router.push('/')}

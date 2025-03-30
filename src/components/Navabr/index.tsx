@@ -16,7 +16,6 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [categories, setCategories] = useState<{ name: string; slug: string }[]>([])
-  const [loading, setLoading] = useState(true)
 
   const pathname = usePathname()
   const isHomePage = pathname === '/'
@@ -28,7 +27,7 @@ export default function Navbar() {
         const response = await fetch('/api/categories')
         const data = await response.json()
         setCategories(
-          data.docs.map((cat: any) => ({
+          data.docs.map((cat: { name: string; slug: string }) => ({
             name: cat.name,
             slug: cat.slug || '',
           })),
@@ -36,7 +35,7 @@ export default function Navbar() {
       } catch (error) {
         console.error('Failed to fetch categories:', error)
       } finally {
-        setLoading(false)
+        // setLoading(false)
       }
     }
 

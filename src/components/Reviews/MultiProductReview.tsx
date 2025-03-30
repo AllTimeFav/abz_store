@@ -1,9 +1,9 @@
-// components/reviews/MultiProductReview.tsx
 'use client'
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ReviewForm } from './ReviewForm'
+import Image from 'next/image'
+import ReviewForm from './ReviewForm'
 
 interface OrderItem {
   id: string
@@ -41,7 +41,7 @@ export default function MultiProductReview({ orderId }: { orderId: string }) {
 
         // Check which items already have reviews
         const itemsWithReviewStatus = await Promise.all(
-          data.items.map(async (item: any) => {
+          data.items.map(async (item: { product: { id: string } }) => {
             const reviewRes = await fetch(
               `/api/reviews?product=${item.product.id}&order=${orderId}`,
             )
@@ -54,7 +54,8 @@ export default function MultiProductReview({ orderId }: { orderId: string }) {
         )
 
         setOrderItems(itemsWithReviewStatus)
-      } catch (error) {
+      } catch (err) {
+        console.log('error : ', err)
         setNotification({
           message: 'Failed to load order details',
           type: 'error',
@@ -114,7 +115,8 @@ export default function MultiProductReview({ orderId }: { orderId: string }) {
       setOrderItems(updatedItems)
 
       setTimeout(handleNext, 1500)
-    } catch (error) {
+    } catch (err) {
+      console.log('error : ', err)
       setNotification({
         message: 'Failed to submit review. Please try again.',
         type: 'error',
@@ -129,7 +131,7 @@ export default function MultiProductReview({ orderId }: { orderId: string }) {
     return (
       <div className="container mx-auto py-8 text-center">
         <h1 className="text-2xl font-bold mb-4">Thank you for your reviews!</h1>
-        <p>You'll be redirected to your order page shortly.</p>
+        <p>You will be redirected to your order page shortly.</p>
       </div>
     )
 
@@ -137,7 +139,7 @@ export default function MultiProductReview({ orderId }: { orderId: string }) {
     return (
       <div className="container mx-auto py-8">
         <h1 className="text-2xl font-bold mb-4">No products to review</h1>
-        <p>This order doesn't contain any products that need reviewing.</p>
+        <p>This order does not contain any products that need reviewing.</p>
       </div>
     )
 
@@ -177,9 +179,10 @@ export default function MultiProductReview({ orderId }: { orderId: string }) {
         <div className="p-4 bg-white">
           <div className="flex gap-4">
             {currentItem.product.image && (
-              <img
+              <Image
                 src={currentItem.product.image.url}
                 alt={currentItem.product.title}
+                fill
                 className="w-20 h-20 object-cover rounded"
               />
             )}

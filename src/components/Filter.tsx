@@ -1,9 +1,10 @@
 'use client'
 
+import { Category } from '@/payload-types'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useState } from 'react'
 
-export default function Filter({ categories }: { categories: any[] }) {
+export default function Filter({ categories }: { categories: Category[] }) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [minPrice, setMinPrice] = useState(searchParams.get('minPrice') || '')
@@ -33,7 +34,7 @@ export default function Filter({ categories }: { categories: any[] }) {
         >
           <option value="">All Categories</option>
           {categories.map((category) => (
-            <option key={category.id} value={category.slug}>
+            <option key={category.id} value={category.slug || ''}>
               {category.name}
             </option>
           ))}
